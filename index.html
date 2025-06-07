@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Examen Final Introducción 2025 A</title>
+</head>
+<body>
+    <h1>Eleazar Natanael Flores Ramos</h1>
+    <h2>eleazar-natanael-flores-ramos</h2>
+    <a href="https://github.com/eleazar-natanael-flores-ramos" target="_blank">
+        Mi usuario de GitHub
+    </a>
+
+    <form id="datosForm">
+        <div>
+            <label for="nombres">Nombres:</label>
+            <input type="text" id="nombres" name="nombres" required>
+        </div>
+        <div>
+            <label for="apellidos">Apellidos:</label>
+            <input type="text" id="apellidos" name="apellidos" required>
+        </div>
+        <div>
+            <label for="anio">Año de nacimiento:</label>
+            <input type="number" id="anio" name="anio" required>
+        </div>
+        <div>
+            <label for="mes">Mes de nacimiento:</label>
+            <input type="number" id="mes" name="mes" min="1" max="12" required>
+        </div>
+        <button type="submit">Guardar</button>
+    </form>
+
+    <div id="resultado" style="margin-top:20px; font-weight:bold;"></div>
+
+    <div id="apartadoUsuario" style="margin-top:20px; border:1px solid #ccc; padding:15px; max-width:400px; display:none;">
+        <h3>Datos del usuario</h3>
+        <p><strong>Nombres:</strong> <span id="resNombres"></span></p>
+        <p><strong>Apellidos:</strong> <span id="resApellidos"></span></p>
+        <p><strong>Año de nacimiento:</strong> <span id="resAnio"></span></p>
+        <p><strong>Mes de nacimiento:</strong> <span id="resMes"></span></p>
+        <p id="resBisiesto"></p>
+    </div>
+
+    <script src="https://unpkg.com/dexie@3.2.4/dist/dexie.js"></script>
+    <script>
+        // Inicializar la base de datos con Dexie.js
+        const db = new Dexie("examen_final_introduccion_2025_A");
+        db.version(1).stores({
+            personas: '++id,nombres,apellidos,anio,mes,bisiesto,mesPar'
+        });
+
+        // Función para saber si un año es bisiesto
+        function esBisiesto(anio) {
+            return (anio % 4 === 0 && (anio % 100 !== 0 || anio % 400 === 0));
+        }
+
+        // Función para saber si el mes es par
+        function esMesPar(mes) {
+            return mes % 2 === 0;
+        }
+
+        document.getElementById('datosForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const nombres = document.getElementById('nombres').value;
+            const apellidos = document.getElementById('apellidos').value;
+            const anio = parseInt(document.getElementById('anio').value, 10);
+            const mes = parseInt(document.getElementById('mes').value, 10);
+
+            const bisiesto = esBisiesto(anio);
+            const mesPar = esMesPar(mes);
+
+            // Guardar en indexDB usando Dexie.js
+            await db.personas.add({
+                nombres,
+                apellidos,
+                anio,
+                mes,
+                bisiesto,
+                mesPar
+            });
+
+            // Mostrar resultado en el espacio debajo del formulario
+            document.getElementById('resultado').innerHTML =
+                `Año bisiesto: <strong>${bisiesto ? 'Sí' : 'No'}</strong><br>` +
+                `Mes: <strong>${mesPar ? 'Par' : 'Impar'}</strong>`;
+
+            // Mostrar el apartado con los datos del usuario
+            document.getElementById('resNombres').textContent = nombres;
+            document.getElementById('resApellidos').textContent = apellidos;
+            document.getElementById('resAnio').textContent = anio;
+            document.getElementById('resMes').textContent = mes;
+            document.getElementById('resBisiesto').textContent =
+                `El año en el que naciste fue ${bisiesto ? 'un Año bisiesto' : 'un Año normal'}.`;
+
+            document.getElementById('apartadoUsuario').style.display = 'block';
+
+            this.reset();
+        });
+    </script>
+</body>
+</html>
